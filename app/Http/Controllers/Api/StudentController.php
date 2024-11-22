@@ -8,26 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
-class studentController extends Controller
+class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::all();
-
-        /* if ($students->isEmpty()) {
-            $data =[
-                'message'=>'no se encontraron estudiantes',
-                'status'=> 200
-            ];
-            return response()->json($data,404);
-        }*/
-
-        $data = [
-            'students' => $students,
-            'status' => 200
-        ];
-
-        return response()->json($data, 200);
+        return response()->json(['students' => Student::all(), 'status' => 200], 200);
     }
 
     public function store(Request $request)
@@ -40,12 +25,11 @@ class studentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            $data = [
-                'message' => 'error en la validacion de los datos ',
+            return response()->json([
+                'message' => 'Error en la validación de los datos',
                 'errors' => $validator->errors(),
                 'status' => 400
-            ];
-            return response()->json($data, 400);
+            ], 400);
         }
 
         $student = Student::create([
@@ -55,18 +39,10 @@ class studentController extends Controller
         ]);
 
         if (!$student) {
-            $data = [
-                'message' => 'Error al crear el estudiante',
-                'status' => 500
-            ];
-            return response()->json($data, 500);
+            return response()->json(['message' => 'Error al crear el estudiante', 'status' => 500], 500);
         }
-        $data = [
-            'student' => $student,
-            'status' => 201
-        ];
 
-        return response()->json($data, 201);
+        return response()->json(['student' => $student, 'status' => 201], 201);
     }
 
     public function show($id)
@@ -74,37 +50,23 @@ class studentController extends Controller
         $student = Student::find($id);
 
         if (!$student) {
-            $data = [
-                'message' => 'Estudiante no encontrado',
-                'status' => 404
-            ];
-            return response()->json($data, 404);
+            return response()->json(['message' => 'Estudiante no encontrado', 'status' => 404], 404);
         }
 
-        $data = [
-            'student' => $student,
-            'status' => 200
-        ];
-
-        return response()->json($data, 200);
+        return response()->json(['student' => $student, 'status' => 200], 200);
     }
 
     public function destroy($id)
     {
         $student = Student::find($id);
+
         if (!$student) {
-            $data = [
-                'message' => 'Estudiante no encontrado',
-                'status' => 404
-            ];
-            return response()->json($data, 404);
+            return response()->json(['message' => 'Estudiante no encontrado', 'status' => 404], 404);
         }
+
         $student->delete();
-        $data = [
-            'student' => $student,
-            'status' => 200
-        ];
-        return response()->json($data, 200);
+
+        return response()->json(['message' => 'Estudiante eliminado', 'status' => 200], 200);
     }
 
     public function update(Request $request, $id)
@@ -112,25 +74,21 @@ class studentController extends Controller
         $student = Student::find($id);
 
         if (!$student) {
-            $data = [
-                'message' => 'Estudiante no encontrado',
-                'status' => 404
-            ];
-            return response()->json($data, 404);
+            return response()->json(['message' => 'Estudiante no encontrado', 'status' => 404], 404);
         }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
-            'email' => 'required|email|unique:student',
+            'email' => 'required|email|unique:students',
             'password' => 'required|max:16',
         ]);
 
         if ($validator->fails()) {
-            $data = [
-                'message' => 'error en la validacion de los datos ',
+            return response()->json([
+                'message' => 'Error en la validación de los datos',
                 'errors' => $validator->errors(),
                 'status' => 400
-            ];
-            return response()->json($data, 400);
+            ], 400);
         }
 
         $student->name = $request->name;
@@ -139,13 +97,7 @@ class studentController extends Controller
 
         $student->save();
 
-        $data = [
-            'message' => 'Estudiante actualizado',
-            'student' => $student,
-            'status' => 200
-        ];
-
-        return response()->json($data, 200);
+        return response()->json(['message' => 'Estudiante actualizado', 'student' => $student, 'status' => 200], 200);
     }
 
     public function assignSala(Request $request, $id)
@@ -153,10 +105,7 @@ class studentController extends Controller
         $student = Student::find($id);
 
         if (!$student) {
-            return response()->json([
-                'message' => 'Estudiante no encontrado',
-                'status' => 404
-            ], 404);
+            return response()->json(['message' => 'Estudiante no encontrado', 'status' => 404], 404);
         }
 
         $validator = Validator::make($request->all(), [
@@ -174,12 +123,9 @@ class studentController extends Controller
         $student->salaId = $request->salaId;
         $student->save();
 
-        return response()->json([
-            'message' => 'Sala asignada exitosamente',
-            'student' => $student,
-            'status' => 200
-        ], 200);
+        return response()->json(['message' => 'Sala asignada exitosamente', 'student' => $student, 'status' => 200], 200);
     }
+
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -200,16 +146,10 @@ class studentController extends Controller
             ->first();
 
         if (!$student) {
-            return response()->json([
-                'message' => 'Credenciales incorrectas',
-                'status' => 401
-            ], 401);
+            return response()->json(['message' => 'Credenciales incorrectas', 'status' => 401], 401);
         }
 
-        return response()->json([
-            'student' => $student,
-            'status' => 200
-        ], 200);
+        return response()->json(['student' => $student, 'status' => 200], 200);
     }
 
     public function uploadProfilePicture(Request $request, $id)
@@ -219,6 +159,7 @@ class studentController extends Controller
         ]);
 
         $student = Student::find($id);
+
         if (!$student) {
             return response()->json(['message' => 'Estudiante no encontrado'], 404);
         }
@@ -240,37 +181,31 @@ class studentController extends Controller
     }
 
     public function verifyAccount(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'email_or_password' => 'required'
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'email_or_password' => 'required'
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'message' => 'Error en la validación',
-            'errors' => $validator->errors(),
-            'status' => 400
-        ], 400);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Error en la validación',
+                'errors' => $validator->errors(),
+                'status' => 400
+            ], 400);
+        }
+
+        // Buscar por email o password
+        $student = Student::where('email', $request->email_or_password)
+            ->orWhere('password', $request->email_or_password)
+            ->first();
+
+        if (!$student) {
+            return response()->json(['message' => 'Cuenta no encontrada', 'status' => 404], 404);
+        }
+
+        return response()->json(['message' => 'Cuenta verificada con éxito', 'student' => $student, 'status' => 200], 200);
     }
 
-    // Buscar por email o password
-    $student = Student::where('email', $request->email_or_password)
-        ->orWhere('password', $request->email_or_password)
-        ->first();
-
-    if (!$student) {
-        return response()->json([
-            'message' => 'Cuenta no encontrada',
-            'status' => 404
-        ], 404);
-    }
-
-    return response()->json([
-        'message' => 'Cuenta verificada con éxito',
-        'student' => $student, // Devuelve los datos básicos
-        'status' => 200
-    ], 200);
-}
     public function updatePassword(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -286,19 +221,14 @@ class studentController extends Controller
         }
 
         $student = Student::find($id);
+
         if (!$student) {
-            return response()->json([
-                'message' => 'Cuenta no encontrada',
-                'status' => 404
-            ], 404);
+            return response()->json(['message' => 'Cuenta no encontrada', 'status' => 404], 404);
         }
 
         $student->password = $request->new_password;
         $student->save();
 
-        return response()->json([
-            'message' => 'Contraseña actualizada con éxito',
-            'status' => 200
-        ], 200);
+        return response()->json(['message' => 'Contraseña actualizada con éxito', 'status' => 200], 200);
     }
 }
