@@ -35,7 +35,7 @@ class studentController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:10',
             'email' => 'required|email|unique:student',
-            'password' => 'required|digits:16',
+            'password' => 'required|max:16',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
@@ -51,8 +51,7 @@ class studentController extends Controller
         $student = Student::create([
             'name' => $request->name,
             'email' => $request->email,
-            'phone' => $request->phone,
-            'language' => $request->language
+            'password' => $request->password,
         ]);
 
         if (!$student) {
@@ -62,7 +61,6 @@ class studentController extends Controller
             ];
             return response()->json($data, 500);
         }
-
         $data = [
             'student' => $student,
             'status' => 201
@@ -94,7 +92,6 @@ class studentController extends Controller
     public function destroy($id)
     {
         $student = Student::find($id);
-
         if (!$student) {
             $data = [
                 'message' => 'Estudiante no encontrado',
@@ -102,14 +99,11 @@ class studentController extends Controller
             ];
             return response()->json($data, 404);
         }
-
         $student->delete();
-
         $data = [
             'student' => $student,
             'status' => 200
         ];
-
         return response()->json($data, 200);
     }
 
@@ -124,12 +118,10 @@ class studentController extends Controller
             ];
             return response()->json($data, 404);
         }
-
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
             'email' => 'required|email|unique:student',
-            'phone' => 'required|digits:10',
-            'language' => 'required|in:English,Spanish,French'
+            'password' => 'required|max:16',
         ]);
 
         if ($validator->fails()) {
@@ -143,8 +135,7 @@ class studentController extends Controller
 
         $student->name = $request->name;
         $student->email = $request->email;
-        $student->phone = $request->phone;
-        $student->language = $request->language;
+        $student->password = $request->password;
 
         $student->save();
 
@@ -193,7 +184,7 @@ class studentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'phone' => 'required|digits:10',
+            'password' => 'required|max:16',
         ]);
 
         if ($validator->fails()) {
@@ -205,7 +196,7 @@ class studentController extends Controller
         }
 
         $student = Student::where('email', $request->email)
-            ->where('phone', $request->phone)
+            ->where('password', $request->password)
             ->first();
 
         if (!$student) {
@@ -251,7 +242,7 @@ class studentController extends Controller
     public function verifyAccount(Request $request)
 {
     $validator = Validator::make($request->all(), [
-        'email_or_phone' => 'required'
+        'email_or_password' => 'required'
     ]);
 
     if ($validator->fails()) {
@@ -262,9 +253,9 @@ class studentController extends Controller
         ], 400);
     }
 
-    // Buscar por email o phone
-    $student = Student::where('email', $request->email_or_phone)
-        ->orWhere('phone', $request->email_or_phone)
+    // Buscar por email o password
+    $student = Student::where('email', $request->email_or_password)
+        ->orWhere('password', $request->email_or_password)
         ->first();
 
     if (!$student) {
@@ -280,8 +271,6 @@ class studentController extends Controller
         'status' => 200
     ], 200);
 }
-
-
     public function updatePassword(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -304,7 +293,7 @@ class studentController extends Controller
             ], 404);
         }
 
-        $student->phone = $request->new_password;
+        $student->password = $request->new_password;
         $student->save();
 
         return response()->json([
