@@ -16,7 +16,7 @@ class RegistroController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed', // Confirmación de la contraseña
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validación de imagen (opcional)
+            'image' => 'required|string', // Validación de imagen (opcional)
         ]);
 
         // Si la validación falla, devolver un error 422 con los detalles

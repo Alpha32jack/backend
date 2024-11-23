@@ -21,7 +21,7 @@ class StudentController extends Controller
             'name' => 'required|max:10',
             'email' => 'required|email|unique:student',
             'password' => 'required|max:16',
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'profile_picture' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -36,6 +36,7 @@ class StudentController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password,
+            'profile_picture' => $request->profile_picture
         ]);
 
         if (!$student) {
@@ -81,6 +82,7 @@ class StudentController extends Controller
             'name' => 'required|max:255',
             'email' => 'required|email|unique:students',
             'password' => 'required|max:16',
+            'profile_picture' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -94,6 +96,7 @@ class StudentController extends Controller
         $student->name = $request->name;
         $student->email = $request->email;
         $student->password = $request->password;
+        $student->profile_picture = $request->profile_picture;
 
         $student->save();
 
@@ -152,33 +155,7 @@ class StudentController extends Controller
         return response()->json(['student' => $student, 'status' => 200], 200);
     }
 
-    public function uploadProfilePicture(Request $request, $id)
-    {
-        $request->validate([
-            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Limita el tamaño y tipo de imagen
-        ]);
 
-        $student = Student::find($id);
-
-        if (!$student) {
-            return response()->json(['message' => 'Estudiante no encontrado'], 404);
-        }
-
-        // Manejo de la imagen
-        if ($request->hasFile('profile_picture')) {
-            // Eliminar la imagen anterior si existe
-            if ($student->profile_picture) {
-                Storage::delete($student->profile_picture);
-            }
-
-            // Guardar la nueva imagen
-            $path = $request->file('profile_picture')->store('profile_pictures', 'public');
-            $student->profile_picture = $path;
-            $student->save();
-        }
-
-        return response()->json(['message' => 'Imagen de perfil actualizada', 'student' => $student], 200);
-    }
 
     public function verifyAccount(Request $request)
     {
